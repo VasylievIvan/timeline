@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <link href="https://fonts.googleapis.com/css?family=Ubuntu:300,300i,400,400i,500,500i,700,700i" rel="stylesheet">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Timeline</title>
+    <link rel="stylesheet" type="text/css" href="vis/vis.min.css">
+    <script type="text/javascript" src="vis/vis.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    
+  </head>
+  <body>
+    <h1>The Timeline</h1>
+    <div id="timeline"></div>
+    <div id="reactapp"></div>
+    
+    <script type="text/javascript">
+      
+      var container = document.getElementById('timeline');
+      var options = {
+      };
+
+      
+      var items;
+      var req = new XMLHttpRequest();
+      req.open("GET", "/users", true);
+      req.onload = function (){
+           items = JSON.parse(req.responseText);
+           var itemsParsed = [];
+           var groups = [];
+           var count = 1;
+           items.forEach(function(user, i, arr) {
+            user.intervals.forEach(function(item, j, arrr) {
+              var tmp = {id:count, group:(i+1), content:user.content, start:item.start, end:item.end};
+              itemsParsed.push(tmp);
+              count = count+1;
+            });
+            var gtmp = {id:(i+1), content:user.content};
+            groups.push(gtmp);
+           });
+           var timeline = new vis.Timeline(container, itemsParsed, groups, options);
+      }
+      req.send(null);
+
+    </script>
+
+<script crossorigin src="https://unpkg.com/react@16/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.25.0/babel.min.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+    <script type="text/babel">
+    class Intervallist extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = {intervallist : [],
+                      username : "",
+                      inputValue1 : "",
+                      inputValue2 : "",
+                      shouldUpdate : 0};                      
+        this.handleChange1 = this.handleChange1.bind(this);
+        this.handleChange2 = this.handleChange2.bind(this);
+        this.handleSubmit1 = this.handleSubmit1.bind(this);
+        this.handleSubmit2 = this.handleSubmit2.bind(this);
+      }
+
+      handleChange1(event) {
+          this.setState({inputValue1: event.target.value});
+      }
+      handleChange2(event) {
+          this.setState({inputValue2: event.target.value});
+      }
+      handleSubmit1(event) {
+      event.preventDefault();        
+        axios.post('/addinterval', { username: this.state.username, interval : {
+        start : this.state.inputValue1,
+        end : this.state.inputValue2} })
+        .then(function(response){
+      }); 
+      this.forceUpdate();
+      this.setState({shouldUpdate : 1});
+      }
+      handleSubmit2(event) {
+      event.preventDefault();        
+        axios.post('/deleteinterval', { username: this.state.username, interval : {
+        start : this.state.inputValue1,
+        end : this.state.inputValue2} })
+        .then(function(response){
+      }); 
+      this.forceUpdate();
+      this.setState({shouldUpdate : 1});
+      }
+
+
+      
+     /* componentWillMount() {
+        var list = [];
+        var name = this.props.userchoice;
+          axios.get('/intervals', {params:{name:name}})
+          .then(response =>{
+          response.data.forEach(function(item, i, arr) {
+            list.push(item);
+          });
+          if(this.state.intervallist === list){
+        }
+          this.setState({intervallist: list });
+          }); 
+        }*/
+        componentDidUpdate() {
+        var list = [];
+        var name = this.props.userchoice;
+        if(this.state.username != this.props.userchoice || this.state.shouldUpdate){
+          axios.get('/intervals', {params:{name:name}})
+          .then(response => {
+            response.data.forEach(function(item, i, arr) {
+            list.push(item);
+          });
+
+          this.setState({intervallist : list});
+          this.setState({username:name});
+          this.setState({shouldUpdate : 0});
+          });          
+        }else{
+        
+
+      }}
+      render() {
+            return (
+            <div  className="intervalForm">
+              <p>{this.state.username}</p>
+              <ul>{
+                this.state.intervallist.map((listValue) => {
+                  return <li>{listValue.start} - {listValue.end}</li>;
+                })}
+              </ul>
+              <form onSubmit={this.handleSubmit1}>
+                  <input type="text" value={this.state.value1} onChange={this.handleChange1} placeholder="От" />
+                  <input type="text" value={this.state.value2} onChange={this.handleChange2} placeholder="До" />
+                  <div className="intervalSubmits">
+                <input type="button" value="Добавить"  onClick={this.handleSubmit1}/>
+                <input type="button" value="удалить"   onClick={this.handleSubmit2}/>
+                  </div>
+              </form>
+
+              
+            </div>
+            )
+        }
+    }
+
+    class Userapp extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = {userchoice : ""};
+        this.handleUserChoice = this.handleUserChoice.bind(this);
+      }
+       handleUserChoice(event) {
+        this.setState({userchoice : event.target.id});
+      }
+      
+      render() {
+            return (
+            <div className="reactapp"><Userlist handleUserChoice={this.handleUserChoice}/><Intervallist userchoice={this.state.userchoice}/>  
+            </div>
+            )
+        }
+    }
+
+
+    class Userlist extends React.Component {
+        constructor(props) {
+            super(props);
+            this.state = {userlist : [],
+                          inputValue1 : "",
+                          inputValue2 : "",
+                          shouldUpdate : 0};
+            this.handleSubmit1 = this.handleSubmit1.bind(this);
+            this.handleChange1 = this.handleChange1.bind(this);
+            this.handleSubmit2 = this.handleSubmit2.bind(this);
+            this.handleChange2 = this.handleChange2.bind(this);
+            
+        }
+        handleChange1(event) {
+          this.setState({inputValue1: event.target.value});
+        }
+
+       
+
+        handleSubmit1(event) {
+        event.preventDefault();       
+          axios.post('/adduser', { username: this.state.inputValue1 })
+          .then(function(response){
+        }); 
+        this.forceUpdate();
+        this.setState({shouldUpdate : 1});
+        }
+        handleChange2(event) {
+          this.setState({inputValue2: event.target.value});
+        }
+
+        handleSubmit2(event) {
+        event.preventDefault();      
+          axios.post('/deleteuser', { username: this.state.inputValue2 })
+          .then(function(response){
+        }); 
+        this.forceUpdate();
+        this.setState({shouldUpdate : 1});
+        }
+
+
+
+
+       
+
+        componentWillMount() {
+        var list = []
+          axios.get('/users')
+          .then(response =>{
+          response.data.forEach(function(item, i, arr) {
+            list.push(item.content);
+          });
+          this.setState({ userlist: list })
+          }); 
+        }
+        componentDidUpdate() {
+        var list = []
+        if(this.state.shouldUpdate){
+          axios.get('/users')
+          .then(response =>{
+          response.data.forEach(function(item, i, arr) {
+            list.push(item.content);
+          });
+          this.setState({ userlist: list })
+          }); 
+          this.setState({shouldUpdate : 0});
+        }
+        }
+        render() {
+            return (
+            <div>
+              <ul>
+                {this.state.userlist.map((listValue) => {
+                  return <li id={listValue} onClick={this.props.handleUserChoice}>{listValue}</li>;
+                })}
+              </ul>
+              <form onSubmit={this.handleSubmit1}>
+                <label>
+                  <input type="text" value={this.state.value1} onChange={this.handleChange1} />
+                </label>
+                <input type="submit" value="Добавить" />
+              </form>
+              <form onSubmit={this.handleSubmit2}>
+                <label>
+                  <input type="text" value={this.state.value2} onChange={this.handleChange2} />
+                </label>
+                <input type="submit" value="Удалить" />
+              </form>
+            </div>
+            )
+        }
+    }
+
+    
+    ReactDOM.render(
+        <Userapp/>, 
+        document.getElementById("reactapp") 
+    )
+   </script>
+  </body>
+</html>

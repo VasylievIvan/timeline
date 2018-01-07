@@ -1,0 +1,81 @@
+* {
+	font-family: 'Ubuntu', sans-serif;
+}
+h1 {
+	font-family: 'Ubuntu', sans-serif;
+	font-weight: 300;
+    color: #444;
+    text-transform: lowercase;
+}
+
+ul li{
+	list-style: none;
+	font-family: 'Ubuntu', sans-serif;
+	border: 1px solid black;
+	border-top: none;
+	height: 30px;
+	display: flex;
+	align-items: center;
+	padding-left: 10px;
+
+}
+ul li:first-child{
+	border-top: 1px solid black;
+}
+ul {
+	padding: 0;
+	margin: 0;
+	width: 306px;
+	margin-top: 10px;
+	list-style-position:inside;
+}
+
+.reactapp {
+	margin-bottom: 100px;
+	display: flex;
+}
+
+input {
+	height: 30px;
+}
+
+input[type="text"] {
+	text-indent: 10px;
+}
+input[type="submit"] {
+	height: 35px;
+	width: 120px;
+	background: none;
+	box-shadow: none;
+	outline: 0;
+	border: 1px solid black;
+}
+input[type="button"] {
+	height: 35px;
+	width: 120px;
+	background: none;
+	box-shadow: none;
+	outline: 0;
+	border: 1px solid black;
+}
+
+.intervalForm {
+	margin-left: 50px;
+}
+form {
+	margin-top: 10px;
+}
+
+.intervalForm input[type="text"] {
+	width: 149px;
+}
+
+.intervalSubmits {
+	margin-top: 10px;
+	display: flex;
+	justify-content: space-around;
+}
+
+.intervalSubmits input[type="button"]{
+	width: 150px;
+}
